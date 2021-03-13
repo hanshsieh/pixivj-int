@@ -1,2 +1,2 @@
-# pixivj-int
-Integration test for Pixivj
+# Pixivj Integration Test
+This repository contains the integration test for Pixivj

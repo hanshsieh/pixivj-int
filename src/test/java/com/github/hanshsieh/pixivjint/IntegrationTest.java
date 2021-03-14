@@ -2,6 +2,8 @@ package com.github.hanshsieh.pixivjint;
 
 import com.github.hanshsieh.pixivj.api.PixivApiClient;
 import com.github.hanshsieh.pixivj.model.FilterType;
+import com.github.hanshsieh.pixivj.model.IllustDetail;
+import com.github.hanshsieh.pixivj.model.Illustration;
 import com.github.hanshsieh.pixivj.model.RecommendedIllusts;
 import com.github.hanshsieh.pixivj.model.RecommendedIllustsFilter;
 import com.github.hanshsieh.pixivj.oauth.PixivOAuthClient;
@@ -74,7 +76,7 @@ public class IntegrationTest {
   }
   @Test
   @DisplayName("Get recommended illustrations")
-  public void recommendedIllusts() throws Exception {
+  public void testGetRecommendedIllusts() throws Exception {
     RecommendedIllustsFilter filter = new RecommendedIllustsFilter();
     filter.setFilter(FilterType.FOR_ANDROID);
     filter.setIncludePrivacyPolicy(true);
@@ -85,5 +87,18 @@ public class IntegrationTest {
     assertNotNull(illusts.getPrivacyPolicy().getVersion());
     assertTrue(illusts.getIllusts().size() > 0);
     assertTrue(illusts.getRankingIllusts().size() > 0);
+  }
+
+  @Test
+  @DisplayName("Get illustration details")
+  public void testGetIllustDetail() throws Exception {
+    RecommendedIllustsFilter filter = new RecommendedIllustsFilter();
+    RecommendedIllusts illusts = apiClient.getRecommendedIllusts(filter);
+    assertFalse(illusts.getIllusts().isEmpty());
+    Illustration illust = illusts.getIllusts().get(0);
+    long illustId = illust.getId();
+    IllustDetail detail = apiClient.getIllustDetail(illustId);
+    Illustration illust2 = detail.getIllust();
+    assertEquals(illust2, illust);
   }
 }

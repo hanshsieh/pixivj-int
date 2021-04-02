@@ -1,17 +1,26 @@
 package com.github.hanshsieh.pixivjint;
 
 import com.github.hanshsieh.pixivj.api.PixivApiClient;
+import com.github.hanshsieh.pixivj.model.FilterMode;
 import com.github.hanshsieh.pixivj.model.FilterType;
 import com.github.hanshsieh.pixivj.model.IllustDetail;
 import com.github.hanshsieh.pixivj.model.Illustration;
+import com.github.hanshsieh.pixivj.model.RankedIllusts;
+import com.github.hanshsieh.pixivj.model.RankedIllustsFilter;
 import com.github.hanshsieh.pixivj.model.RecommendedIllusts;
 import com.github.hanshsieh.pixivj.model.RecommendedIllustsFilter;
+import com.github.hanshsieh.pixivj.model.SearchTarget;
+import com.github.hanshsieh.pixivj.model.SearchedIllusts;
+import com.github.hanshsieh.pixivj.model.SearchedIllustsFilter;
 import com.github.hanshsieh.pixivj.oauth.PixivOAuthClient;
 import com.github.hanshsieh.pixivj.token.FixedTokenProvider;
 import com.github.hanshsieh.pixivj.token.ThreadedTokenRefresher;
 import com.github.hanshsieh.pixivj.token.TokenProvider;
 import com.github.hanshsieh.pixivjjfx.stage.PixivLoginStage;
 import com.github.hanshsieh.pixivjjfx.token.WebViewTokenProvider;
+import java.time.LocalDate;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -74,6 +83,31 @@ public class IntegrationTest {
       apiClient.close();
     }
   }
+
+  private void validateIllustrations(@NonNull List<Illustration> illusts) {
+    for (Illustration illust : illusts) {
+      assertNotNull(illust.getId());
+      assertNotNull(illust.getTitle());
+      assertNotNull(illust.getCaption());
+      assertNotNull(illust.getCreateDate());
+    }
+  }
+
+  @Test
+  @DisplayName("Get ranked illustrations")
+  public void testGetRankedIllusts() throws Exception {
+    RankedIllustsFilter filter = new RankedIllustsFilter();
+    filter.setFilter(FilterType.FOR_ANDROID);
+    filter.setMode(FilterMode.DAY_MALE);
+    // Today's ranking might not be ready
+    filter.setDate(LocalDate.now().minusDays(3));
+    filter.setOffset(1);
+    RankedIllusts illusts = apiClient.getRankedIllusts(filter);
+    assertNotNull(illusts.getNextUrl());
+    assertNotNull(illusts.getIllusts());
+    validateIllustrations(illusts.getIllusts());
+  }
+
   @Test
   @DisplayName("Get recommended illustrations")
   public void testGetRecommendedIllusts() throws Exception {
@@ -87,6 +121,24 @@ public class IntegrationTest {
     assertNotNull(illusts.getPrivacyPolicy().getVersion());
     assertTrue(illusts.getIllusts().size() > 0);
     assertTrue(illusts.getRankingIllusts().size() > 0);
+    validateIllustrations(illusts.getIllusts());
+    validateIllustrations(illusts.getRankingIllusts());
+  }
+
+  @Test
+  @DisplayName("Search illustrations")
+  public void testSearchIllusts() throws Exception {
+    SearchedIllustsFilter filter = new SearchedIllustsFilter();
+    filter.setFilter(FilterType.FOR_ANDROID);
+    filter.setWord("swimsuit girl");
+    filter.setIncludeTranslatedTagResults(true);
+    filter.setMergePlainKeywordResults(true);
+    filter.setOffset(5);
+    filter.setSearchTarget(SearchTarget.PARTIAL_MATCH_FOR_TAGS);
+    SearchedIllusts illusts = apiClient.searchIllusts(filter);
+    assertNotNull(illusts.getNextUrl());
+    assertNotNull(illusts.getSearchSpanLimit());
+    validateIllustrations(illusts.getIllusts());
   }
 
   @Test

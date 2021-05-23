@@ -1,6 +1,8 @@
 package com.github.hanshsieh.pixivjint;
 
 import com.github.hanshsieh.pixivj.api.PixivApiClient;
+import com.github.hanshsieh.pixivj.model.AddBookmark;
+import com.github.hanshsieh.pixivj.model.AddBookmarkResult;
 import com.github.hanshsieh.pixivj.model.Comment;
 import com.github.hanshsieh.pixivj.model.Comments;
 import com.github.hanshsieh.pixivj.model.FilterMode;
@@ -12,6 +14,7 @@ import com.github.hanshsieh.pixivj.model.RankedIllusts;
 import com.github.hanshsieh.pixivj.model.RankedIllustsFilter;
 import com.github.hanshsieh.pixivj.model.RecommendedIllusts;
 import com.github.hanshsieh.pixivj.model.RecommendedIllustsFilter;
+import com.github.hanshsieh.pixivj.model.Restrict;
 import com.github.hanshsieh.pixivj.model.SearchTarget;
 import com.github.hanshsieh.pixivj.model.SearchedIllusts;
 import com.github.hanshsieh.pixivj.model.SearchedIllustsFilter;
@@ -211,5 +214,15 @@ public class IntegrationTest {
       }
       filter = IllustCommentsFilter.fromUrl(nextUrl);
     }
+  }
+
+  @Test
+  @DisplayName("Add bookmark")
+  public void testAddBookmark() throws Exception {
+    AddBookmark bookmark = new AddBookmark();
+    bookmark.setIllustId(89914952L);
+    bookmark.setRestrict(Restrict.PUBLIC);
+    AddBookmarkResult result = apiClient.addBookmark(bookmark);
+    assertNotNull(result);
   }
 }

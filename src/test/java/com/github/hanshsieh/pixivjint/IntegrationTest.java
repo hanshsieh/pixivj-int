@@ -1,8 +1,11 @@
 package com.github.hanshsieh.pixivjint;
 
 import com.github.hanshsieh.pixivj.api.PixivApiClient;
+import com.github.hanshsieh.pixivj.model.Comment;
+import com.github.hanshsieh.pixivj.model.Comments;
 import com.github.hanshsieh.pixivj.model.FilterMode;
 import com.github.hanshsieh.pixivj.model.FilterType;
+import com.github.hanshsieh.pixivj.model.IllustCommentsFilter;
 import com.github.hanshsieh.pixivj.model.IllustDetail;
 import com.github.hanshsieh.pixivj.model.Illustration;
 import com.github.hanshsieh.pixivj.model.RankedIllusts;
@@ -93,6 +96,18 @@ public class IntegrationTest {
     }
   }
 
+  private void validateComment(Comment comment) {
+    assertNotNull(comment.getComment());
+    assertNotNull(comment.getDate());
+    assertNotNull(comment.getHasReplies());
+    assertNotNull(comment.getId());
+    assertNotNull(comment.getUser());
+    assertNotNull(comment.getUser().getAccount());
+    assertNotNull(comment.getUser().getId());
+    assertNotNull(comment.getUser().getName());
+    assertNotNull(comment.getUser().getProfileImageUrls());
+  }
+
   @Test
   @DisplayName("Get ranked illustrations")
   public void testGetRankedIllusts() throws Exception {
@@ -102,10 +117,17 @@ public class IntegrationTest {
     // Today's ranking might not be ready
     filter.setDate(LocalDate.now().minusDays(3));
     filter.setOffset(1);
-    RankedIllusts illusts = apiClient.getRankedIllusts(filter);
-    assertNotNull(illusts.getNextUrl());
-    assertNotNull(illusts.getIllusts());
-    validateIllustrations(illusts.getIllusts());
+    for (int i = 0; i < 2; ++i) {
+      RankedIllusts illusts = apiClient.getRankedIllusts(filter);
+      assertNotNull(illusts.getNextUrl());
+      assertNotNull(illusts.getIllusts());
+      validateIllustrations(illusts.getIllusts());
+      String nextUrl = illusts.getNextUrl();
+      if (nextUrl == null) {
+        break;
+      }
+      filter = RankedIllustsFilter.fromUrl(nextUrl);
+    }
   }
 
   @Test
@@ -115,14 +137,26 @@ public class IntegrationTest {
     filter.setFilter(FilterType.FOR_ANDROID);
     filter.setIncludePrivacyPolicy(true);
     filter.setIncludeRankingIllusts(true);
-    RecommendedIllusts illusts = apiClient.getRecommendedIllusts(filter);
-    assertNotNull(illusts.getNextUrl());
-    assertNotNull(illusts.getPrivacyPolicy());
-    assertNotNull(illusts.getPrivacyPolicy().getVersion());
-    assertTrue(illusts.getIllusts().size() > 0);
-    assertTrue(illusts.getRankingIllusts().size() > 0);
-    validateIllustrations(illusts.getIllusts());
-    validateIllustrations(illusts.getRankingIllusts());
+    for (int i = 0; i < 2; ++i) {
+      RecommendedIllusts illusts = apiClient.getRecommendedIllusts(filter);
+      assertNotNull(illusts.getNextUrl());
+      assertNotNull(illusts.getPrivacyPolicy());
+      if (i == 0) {
+        assertNotNull(illusts.getPrivacyPolicy().getVersion());
+        assertTrue(illusts.getRankingIllusts().size() > 0);
+      } else {
+        assertNull(illusts.getPrivacyPolicy().getVersion());
+        assertTrue(illusts.getRankingIllusts().isEmpty());
+      }
+      assertTrue(illusts.getIllusts().size() > 0);
+      validateIllustrations(illusts.getIllusts());
+      validateIllustrations(illusts.getRankingIllusts());
+      String nextUrl = illusts.getNextUrl();
+      if (nextUrl == null) {
+        break;
+      }
+      filter = RecommendedIllustsFilter.fromUrl(nextUrl);
+    }
   }
 
   @Test
@@ -135,10 +169,17 @@ public class IntegrationTest {
     filter.setMergePlainKeywordResults(true);
     filter.setOffset(5);
     filter.setSearchTarget(SearchTarget.PARTIAL_MATCH_FOR_TAGS);
-    SearchedIllusts illusts = apiClient.searchIllusts(filter);
-    assertNotNull(illusts.getNextUrl());
-    assertNotNull(illusts.getSearchSpanLimit());
-    validateIllustrations(illusts.getIllusts());
+    for (int i = 0; i < 2; ++i) {
+      SearchedIllusts illusts = apiClient.searchIllusts(filter);
+      assertNotNull(illusts.getNextUrl());
+      assertNotNull(illusts.getSearchSpanLimit());
+      validateIllustrations(illusts.getIllusts());
+      String nextUrl = illusts.getNextUrl();
+      if (nextUrl == null) {
+        break;
+      }
+      filter = SearchedIllustsFilter.fromUrl(nextUrl);
+    }
   }
 
   @Test
@@ -152,5 +193,23 @@ public class IntegrationTest {
     IllustDetail detail = apiClient.getIllustDetail(illustId);
     Illustration illust2 = detail.getIllust();
     assertEquals(illust2, illust);
+  }
+
+  @Test
+  @DisplayName("Get illustration comments")
+  public void testIllustComments() throws Exception {
+    IllustCommentsFilter filter = new IllustCommentsFilter();
+    filter.setIllustId(79898361L);
+    for (int i = 0; i < 2; ++i) {
+      Comments comments = apiClient.getIllustComments(filter);
+      for (Comment comment : comments.getComments()) {
+        validateComment(comment);
+      }
+      String nextUrl = comments.getNextUrl();
+      if (nextUrl == null) {
+        break;
+      }
+      filter = IllustCommentsFilter.fromUrl(nextUrl);
+    }
   }
 }

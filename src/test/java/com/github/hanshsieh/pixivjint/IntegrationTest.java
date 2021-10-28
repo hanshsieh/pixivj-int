@@ -220,7 +220,7 @@ public class IntegrationTest {
   @DisplayName("Add bookmark")
   public void testAddBookmark() throws Exception {
     AddBookmark bookmark = new AddBookmark();
-    bookmark.setIllustId(89914952L);
+    bookmark.setIllustId(93727205L);
     bookmark.setRestrict(Restrict.PUBLIC);
     AddBookmarkResult result = apiClient.addBookmark(bookmark);
     assertNotNull(result);

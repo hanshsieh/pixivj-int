@@ -17,8 +17,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>9</maven.compiler.source>
-    <maven.compiler.target>9</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <!-- JavaFX needs at least JDK 11 -->
+    <maven.compiler.target>11</maven.compiler.target>
     <org.slf4j.simpleLogger.defaultLogLevel>debug</org.slf4j.simpleLogger.defaultLogLevel>
   </properties>
 
@@ -32,7 +33,7 @@
   <developers>
     <developer>
       <name>Hans Hsieh</name>
-      <email>blueskywalk@outlook.com</email>
+      <email>539874+hanshsieh@users.noreply.github.com</email>
       <roles>
         <role>developer</role>
       </roles>
@@ -64,7 +65,7 @@
     <dependency>
       <groupId>com.github.hanshsieh</groupId>
       <artifactId>pixivj</artifactId>
-      <version>1.2.3-beta.3-SNAPSHOT</version>
+      <version>1.2.3</version>
     </dependency>
     <dependency>
       <groupId>com.github.hanshsieh</groupId>
